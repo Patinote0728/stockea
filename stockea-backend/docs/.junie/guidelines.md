@@ -1,0 +1,11 @@
+# Reglas del proyecto STOCKEA
+- Arquitectura hexagonal / Clean Architecture: domain, application, infrastructure, interfaces.
+- domain es Java puro: sin Spring, sin JPA, sin Jackson.
+- Regla de dependencia hacia adentro, verificada por ArchitectureTest.
+- Integraciones externas solo mediante puertos (interfaces) y adaptadores.
+- TDD en domain y application: pruebas primero.
+- Dinero y porcentajes: BigDecimal, nunca double/float.
+- Las contraseñas nunca se persisten, loguean ni guardan en almacenamiento local.
+- Los secretos se obtienen de Vault en tiempo de ejecución; nunca en el repo ni en application.properties.
+- Backend stateless: validar JWT en cada request.
+- Consulta docs/ antes de decidir; si algo contradice un ADR, avísame.
