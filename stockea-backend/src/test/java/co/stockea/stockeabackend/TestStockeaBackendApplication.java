@@ -1,5 +1,6 @@
 package co.stockea.stockeabackend;
 
+import co.stockea.StockeaBackendApplication;
 import org.springframework.boot.SpringApplication;
 
 public class TestStockeaBackendApplication {

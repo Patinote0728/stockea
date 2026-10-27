@@ -1,0 +1,21 @@
+### 1. Login AppRole (espera 200 y un client_token)
+POST {{vault}}/v1/auth/approle/login
+Content-Type: application/json
+
+{ "role_id": "{{role_id}}", "secret_id": "{{secret_id}}" }
+
+> {% client.global.set("vault_token", response.body.auth.client_token); %}
+
+### 2. Leer el secreto permitido (espera 200)
+GET {{vault}}/v1/secret/data/stockea/idp
+X-Vault-Token: {{vault_token}}
+
+### 3. Leer una ruta NO permitida (espera 403)
+GET {{vault}}/v1/secret/data/stockea/otra-cosa
+X-Vault-Token: {{vault_token}}
+
+### 4. Login con un SecretId incorrecto (espera un error 4xx)
+POST {{vault}}/v1/auth/approle/login
+Content-Type: application/json
+
+{ "role_id": "{{role_id}}", "secret_id": "00000000-0000-0000-0000-000000000000" }

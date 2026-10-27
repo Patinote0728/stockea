@@ -3,3 +3,54 @@ GET https://examples.http-client.intellij.net/get
     ?generated-in=IntelliJ IDEA
 
 ###
+### 1. Login (guarda tokens A)
+POST {{kc}}/realms/stockea/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=stockea-pwd-verifier&client_secret={{verifier_secret}}&username={{username}}&password={{old_password}}
+
+> {% client.global.set("access_a", response.body.access_token);
+    client.global.set("refresh_a", response.body.refresh_token); %}
+
+### 2. Login con contraseña incorrecta (espera 401)
+POST {{kc}}/realms/stockea/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=stockea-pwd-verifier&client_secret={{verifier_secret}}&username={{username}}&password=incorrecta123
+
+### 3. Token del service account
+POST {{kc}}/realms/stockea/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id=stockea-admin-api&client_secret={{admin_secret}}
+
+> {% client.global.set("admin_token", response.body.access_token); %}
+
+### 4. Cambiar la contraseña (espera 204)
+PUT {{kc}}/admin/realms/stockea/users/{{user_id}}/reset-password
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{ "type": "password", "value": "{{new_password}}", "temporary": false }
+
+### 5. Cerrar las sesiones del usuario (espera 204)
+POST {{kc}}/admin/realms/stockea/users/{{user_id}}/logout
+Authorization: Bearer {{admin_token}}
+
+### 6. Renovar con el refresh token VIEJO (espera 400 invalid_grant)
+POST {{kc}}/realms/stockea/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&client_id=stockea-pwd-verifier&client_secret={{verifier_secret}}&refresh_token={{refresh_a}}
+
+### 7a. Login con la contraseña NUEVA (espera 200)
+POST {{kc}}/realms/stockea/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=stockea-pwd-verifier&client_secret={{verifier_secret}}&username={{username}}&password={{new_password}}
+
+### 7b. Login con la contraseña VIEJA (espera 401)
+POST {{kc}}/realms/stockea/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=stockea-pwd-verifier&client_secret={{verifier_secret}}&username={{username}}&password={{old_password}}

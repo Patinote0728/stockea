@@ -473,49 +473,53 @@ No se requiere spike de riesgo técnico (herramientas estándar de la industria)
 
 | Campo                   | Valor                                  |
 | ----------------------- | -------------------------------------- |
-| Estado                  | **Propuesto** (pendiente de SPK-006)   |
+| Estado                  | **Aprobado**                           |
 | Escenarios relacionados | ESC-CAL-SEG-0012, ESC-CAL-SEG-0014     |
 | Atributos de calidad    | Seguridad                              |
 
 ### Contexto
 
-RF-007.7 exige que el usuario ingrese su contraseña actual y la nueva. La API administrativa del IDP permite establecer una contraseña nueva, pero no verifica la contraseña actual. Necesitamos definir cómo se valida la actual y cómo se actualiza la credencial manteniendo el Backend sin estado.
+RF-007.7 exige que el usuario ingrese su contraseña actual y la nueva. La API administrativa del IDP permite establecer una contraseña nueva, pero no verifica la contraseña actual. Se necesita definir cómo se valida la actual y cómo se actualiza la credencial manteniendo el Backend sin estado.
+
+Para identificar al usuario en el IDP, se adopta el mapeo `username = tipo-documento + número`; por ejemplo, `CC-1000000001`. El tipo de documento y el número se concatenan con un guion.
 
 ### Alternativas evaluadas
 
 |#|Alternativa|Ventajas|Desventajas|
 |---|---|---|---|
-|A|**El Backend verifica la contraseña actual contra el token endpoint del IDP (grant de contraseña con un cliente confidencial dedicado) y actualiza la credencial con la API administrativa usando un service account. Ambos secretos se obtienen del Key Vault.**|Control total del flujo en el Backend. Permite aplicar rate limiting y auditoría propios. Coincide con la arquitectura de componentes ya definida (Backend → Key Vault → IDP).|El grant de contraseña está en desuso en OAuth 2.1, aunque sigue disponible en el IDP. Los intentos fallidos cuentan para la detección de fuerza bruta del IDP. El service account requiere permisos de administración sobre usuarios.|
-|B|Invocar la API de cuenta del IDP con el token del propio usuario, enviando contraseña actual y nueva|No requiere service account con privilegios de administración. El IDP valida todo.|Depende de que la versión del IDP soporte ese endpoint; menos control sobre auditoría y rate limiting. A validar en el spike.|
-|C|Redirigir al usuario a la pantalla de cuenta alojada por el IDP|Sin código propio de manejo de contraseñas.|Rompe la experiencia de la PWA y no permite el correo de aviso desde el Backend de forma natural.|
+|A|**El Backend verifica la contraseña actual contra el token endpoint del IDP (grant de contraseña con un cliente confidencial dedicado) y actualiza la credencial con la API administrativa usando un service account. Ambos secretos se obtienen del Key Vault.**|Control del flujo en el Backend. Permite aplicar rate limiting y auditoría propios. Coincide con la arquitectura de componentes ya definida (Backend → Key Vault → IDP).|El grant de contraseña está en desuso en OAuth 2.1, aunque sigue disponible en el IDP. Los intentos fallidos cuentan para la detección de fuerza bruta del IDP. El service account requiere permisos de administración sobre usuarios.|
+|B|Invocar la API de cuenta del IDP con el token del propio usuario, enviando contraseña actual y nueva|No requiere service account con privilegios de administración. El IDP valida todo.|No se probó con la versión actual del IDP; su compatibilidad queda sin validar.|
 
 ### Decisión
 
-**Alternativa A**, sujeta a la validación de SPK-006. Si el spike demuestra que la alternativa B es soportada de forma estable por la versión del IDP, se prefiere B por menor privilegio.
+**Alternativa A: verificar la contraseña actual mediante el token endpoint del IDP y actualizar la credencial mediante la API administrativa.** La decisión fue validada con SPK-006. La alternativa B no se probó y no forma parte de la solución aprobada.
 
 ### Justificación
 
-La alternativa A es la que encaja con la arquitectura documentada y mantiene el control del flujo (rate limiting, auditoría y notificación) en el Backend. Se acepta temporalmente el uso del grant de contraseña, restringido a un cliente dedicado y confidencial.
+La alternativa A encaja con la arquitectura documentada y mantiene el control del flujo (rate limiting, auditoría y notificación) en el Backend. SPK-006 confirmó el comportamiento esperado para los pasos probados. Se acepta el uso del grant de contraseña, restringido a un cliente dedicado y confidencial.
 
 ### Tácticas arquitectónicas
 
 - **Cliente dedicado** en el IDP con grant de contraseña habilitado únicamente para este caso de uso.
 - **Service account de mínimo privilegio** para actualizar credenciales, con su secreto en el Key Vault.
 - **Puerto IdentityProviderPort**: el dominio no conoce Keycloak.
+- **Mapeo de usuario**: `username = tipo-documento + número`, por ejemplo `CC-1000000001`.
 - **Sin persistencia de contraseñas** en el Backend: viajan en memoria solo durante la solicitud y se excluyen de logs y trazas.
 - **Timeouts** hacia el IDP.
 
 ### PoC / Spike requerido
 
-|Spike|Objetivo|Criterio de éxito|Duración estimada|
+**SPK-006 — Completado.** Los pasos 1 a 7b resultaron conformes. Además, el cierre de las demás sesiones (`logout`) respondió **204** y el refresh token anterior fue rechazado con **400**.
+
+|Spike|Objetivo|Criterio de éxito|Resultado|
 |---|---|---|---|
-|SPK-006|Validar la verificación de contraseña actual y la actualización de credencial contra el IDP, además del cierre de las demás sesiones|Con contraseña actual correcta se actualiza la credencial; con una incorrecta se rechaza sin cambios; tras el cambio, los refresh tokens anteriores quedan revocados.|2 días|
+|SPK-006|Validar la verificación de contraseña actual y la actualización de credencial contra el IDP, además del cierre de las demás sesiones|Con contraseña actual correcta se actualiza la credencial; con una incorrecta se rechaza sin cambios; tras el cambio, los refresh tokens anteriores quedan revocados.|**Completado**: pasos 1 a 7b conformes; `logout` de sesiones = 204; refresh token viejo rechazado con 400.|
 
 ### Consecuencias
 
-- Se acepta el uso temporal del grant de contraseña en un cliente restringido.
+- Se acepta el uso del grant de contraseña en un cliente restringido.
 - Los intentos fallidos pueden bloquear temporalmente la cuenta; se documenta el desbloqueo por el Administrador.
-- Se reevaluará la decisión al actualizar el IDP o si se prefiere la alternativa B.
+- La alternativa B no se probó; se reevaluará si cambia la versión del IDP.
 
 ---
 
@@ -670,6 +674,6 @@ El patrón puerto-adaptador ya exigido en las restricciones técnicas permite ca
 | SPK-003 | ADR-003 | Fraccionamiento de venta entre lotes con descuentos activos (FIFO por vencimiento) | Alta |
 | SPK-004 | ADR-006 | Motor de recomendaciones con datos simulados de 30 días de un negocio piloto | Alta |
 | SPK-005 | ADR-007 | Prueba de carga de rate limiting con librería en memoria sobre una sola instancia de backend | Opcional / Baja |
-| SPK-006 | ADR-011, ADR-012 | Verificación de contraseña actual, actualización de credencial y revocación de sesiones contra el IDP | Alta |
+| SPK-006 | ADR-011, ADR-012 | Verificación de contraseña actual, actualización de credencial y revocación de sesiones contra el IDP | **Completado** |
 | SPK-007 | ADR-011 | Obtención de secretos del Key Vault por el Backend (autenticación del Backend y lectura de secretos) | Alta |
 | SPK-008 | ADR-014 | Envío de correo por el adaptador SMTP con el proveedor gratuito elegido | Media | 

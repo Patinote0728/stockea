@@ -8,4 +8,4 @@
 - Las contraseñas nunca se persisten, loguean ni guardan en almacenamiento local.
 - Los secretos se obtienen de Vault en tiempo de ejecución; nunca en el repo ni en application.properties.
 - Backend stateless: validar JWT en cada request.
-- Consulta docs/ antes de decidir; si algo contradice un ADR, avísame.
+- Consulta docs/ antes de decidir.
