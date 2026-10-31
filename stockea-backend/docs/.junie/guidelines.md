@@ -9,3 +9,4 @@
 - Los secretos se obtienen de Vault en tiempo de ejecución; nunca en el repo ni en application.properties.
 - Backend stateless: validar JWT en cada request.
 - Consulta docs/ antes de decidir.
+- Cuando sea posible, el código debe ser en español.

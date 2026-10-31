@@ -591,7 +591,7 @@ La nueva contraseña debe cumplir una política mínima. Si cada capa define su 
 
 ### Decisión
 
-**Alternativa A.** Valores iniciales propuestos, a confirmar: longitud mínima de 10 caracteres, distinta de la contraseña actual y de las últimas 3, que no contenga el número de documento ni el correo del usuario, y que no esté en una lista de contraseñas comunes.
+**Alternativa A.** La contraseña tendrá una longitud mínima de 10 caracteres, será distinta de la actual y de las últimas 3, y no contendrá el número de documento ni el correo del usuario. Se elimina la caducidad periódica de tres días (`passwordAge(3)`); no se exigirá cambiar la contraseña solo por el paso del tiempo. El IDP aplicará el historial de 4 credenciales (`passwordHistory(4)`) para impedir su reutilización.
 
 ### Justificación
 
@@ -600,7 +600,7 @@ Prioriza longitud sobre complejidad artificial, adecuado a un público no técni
 ### Tácticas arquitectónicas
 
 - **Value Object PasswordPolicy** en el dominio con las reglas replicables.
-- **Política del IDP** como validación final.
+- **Política del IDP** como validación final, con longitud mínima, exclusión de usuario/correo e historial de 4 credenciales; sin caducidad periódica.
 - **Mensajes de error claros** con la regla incumplida, en lenguaje cotidiano (ESC-CAL-USA-0001).
 
 ### PoC / Spike requerido
@@ -609,6 +609,7 @@ No se requiere spike.
 
 ### Consecuencias
 
+- Se elimina la regla de caducidad de tres días; el historial de 4 credenciales la sustituye como protección contra la reutilización, sin forzar rotaciones por tiempo.
 - Cambiar la política exige actualizar el IDP, el dominio y el cliente.
 - Se documenta la política vigente en un único lugar.
 

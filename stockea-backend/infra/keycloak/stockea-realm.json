@@ -56,7 +56,7 @@
   "requiredCredentials": [
     "password"
   ],
-  "passwordPolicy": "length(10) and notUsername(undefined) and notEmail(undefined) and passwordAge(3)",
+  "passwordPolicy": "length(10) and notUsername(undefined) and notEmail(undefined) and passwordHistory(4)",
   "otpPolicyType": "totp",
   "otpPolicyAlgorithm": "HmacSHA1",
   "otpPolicyInitialCounter": 0,
