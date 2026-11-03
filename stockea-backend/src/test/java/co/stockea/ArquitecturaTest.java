@@ -8,20 +8,20 @@ import com.tngtech.archunit.lang.ArchRule;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 @AnalyzeClasses(packages = "co.stockea", importOptions = ImportOption.DoNotIncludeTests.class)
-class ArchitectureTest {
+class ArquitecturaTest {
 
     @ArchTest
     static final ArchRule dominio_no_depende_de_nada_externo =
-            noClasses().that().resideInAPackage("..domain..")
+            noClasses().that().resideInAPackage("..dominio..")
                     .should().dependOnClassesThat().resideInAnyPackage(
-                            "..application..", "..infrastructure..", "..interfaces..",
+                            "..aplicacion..", "..infraestructura..", "..interfaces..",
                             "org.springframework..", "jakarta.persistence..")
                     .allowEmptyShould(true);
 
     @ArchTest
     static final ArchRule aplicacion_no_depende_de_infraestructura_ni_interfaces =
-            noClasses().that().resideInAPackage("..application..")
+            noClasses().that().resideInAPackage("..aplicacion..")
                     .should().dependOnClassesThat().resideInAnyPackage(
-                            "..infrastructure..", "..interfaces..")
+                            "..infraestructura..", "..interfaces..")
                     .allowEmptyShould(true);
 }

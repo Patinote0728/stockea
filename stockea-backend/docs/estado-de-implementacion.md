@@ -3,7 +3,7 @@
 ## Stack real
 - Java 26 (JDK local y `java.version` del pom.xml), Maven, Spring Boot 4.1.2 (Jackson 3, JUnit 6)
 - Spring Vault 4.1.1 (`spring-vault-core`, scope test por ahora; Boot 4.1.2 no gestiona su versión, se fija con la propiedad `spring-vault.version`)
-- Paquete raíz: co.stockea (módulo: co.stockea.account → domain/application/infrastructure/interfaces)
+- Paquete raíz: co.stockea (módulo: co.stockea.cuenta → domain/application/infrastructure/interfaces)
 - Backend en puerto 8081; Postgres en contenedor, puerto configurable con POSTGRES_PORT (5433 en el equipo de desarrollo)
 - Entorno local: Docker Compose con Postgres, Keycloak 26, Vault (modo dev), Mailpit
 - ArchitectureTest (ArchUnit) protege la regla de dependencia
