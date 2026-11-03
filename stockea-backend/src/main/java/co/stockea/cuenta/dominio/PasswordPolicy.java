@@ -1,4 +1,4 @@
-package co.stockea.account.domain;
+package co.stockea.cuenta.dominio;
 
 import java.util.ArrayList;
 import java.util.List;
