@@ -573,7 +573,7 @@ Cubierto por SPK-006.
 
 | Campo                   | Valor                              |
 | ----------------------- | ---------------------------------- |
-| Estado                  | **Propuesto**                      |
+| Estado                  | **Aprobado**                       |
 | Escenarios relacionados | ESC-CAL-SEG-0012                   |
 | Atributos de calidad    | Seguridad, Usabilidad              |
 
@@ -591,7 +591,7 @@ La nueva contraseña debe cumplir una política mínima. Si cada capa define su 
 
 ### Decisión
 
-**Alternativa A.** La contraseña tendrá una longitud mínima de 10 caracteres, será distinta de la actual y de las últimas 3, y no contendrá el número de documento ni el correo del usuario. Se elimina la caducidad periódica de tres días (`passwordAge(3)`); no se exigirá cambiar la contraseña solo por el paso del tiempo. El IDP aplicará el historial de 4 credenciales (`passwordHistory(4)`) para impedir su reutilización.
+**Alternativa A.** La contraseña tendrá una longitud mínima de 10 caracteres, será distinta de la actual, no contendrá el número de documento ni el correo del usuario, y no podrá repetir las contraseñas anteriores: el IDP aplica un historial de 4 credenciales (`passwordHistory(4)`). No se exigirá cambiarla solo por el paso del tiempo. No se valida contra una lista de contraseñas comunes: **riesgo aceptado en el MVP**, mitigado por el límite de intentos (ESC-CAL-SEG-0014) y la detección de fuerza bruta del IDP. Si se decide incorporarla, se añade una regla al dominio y al cliente.
 
 ### Justificación
 

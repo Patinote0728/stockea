@@ -15,7 +15,7 @@ class ArquitecturaTest {
             noClasses().that().resideInAPackage("..dominio..")
                     .should().dependOnClassesThat().resideInAnyPackage(
                             "..aplicacion..", "..infraestructura..", "..interfaces..",
-                            "org.springframework..", "jakarta.persistence..")
+                            "org.springframework..", "jakarta.persistence..", "tools.jackson..", "com.fasterxml.jackson..")
                     .allowEmptyShould(true);
 
     @ArchTest

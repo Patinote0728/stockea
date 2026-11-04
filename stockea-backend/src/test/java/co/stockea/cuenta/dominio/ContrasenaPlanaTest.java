@@ -6,23 +6,23 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class RawPasswordTest {
+class ContrasenaPlanaTest {
 
     @Test
-    void rejectsNullOrEmptyValues() {
+    void rechazaValoresNulosOVacios() {
         assertThrows(IllegalArgumentException.class, () -> new ContrasenaPlana(null));
         assertThrows(IllegalArgumentException.class, () -> new ContrasenaPlana(""));
     }
 
     @Test
-    void acceptsNonEmptyValues() {
-        assertDoesNotThrow(() -> new ContrasenaPlana("valid-password"));
+    void aceptaValoresNoVacios() {
+        assertDoesNotThrow(() -> new ContrasenaPlana("contrasena-valida"));
     }
 
     @Test
-    void doesNotExposeValueInToString() {
-        String secret = "never-print-this-password";
+    void noExponeElValorEnToString() {
+        String secreto = "nunca-imprimir-esta-contrasena";
 
-        assertFalse(new ContrasenaPlana(secret).toString().contains(secret));
+        assertFalse(new ContrasenaPlana(secreto).toString().contains(secreto));
     }
 }

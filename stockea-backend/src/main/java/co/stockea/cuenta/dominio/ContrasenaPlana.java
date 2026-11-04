@@ -2,21 +2,21 @@ package co.stockea.cuenta.dominio;
 
 public final class ContrasenaPlana {
 
-    private final String value;
+    private final String valor;
 
-    public ContrasenaPlana(String value) {
-        if (value == null || value.isEmpty()) {
+    public ContrasenaPlana(String valor) {
+        if (valor == null || valor.isEmpty()) {
             throw new IllegalArgumentException("La contraseña no puede ser nula ni vacía");
         }
-        this.value = value;
+        this.valor = valor;
     }
 
-    String value() {
-        return value;
+    String valor() {
+        return valor;
     }
 
     @Override
     public String toString() {
-        return "RawPassword[REDACTED]";
+        return "ContrasenaPlana[OCULTA]";
     }
 }

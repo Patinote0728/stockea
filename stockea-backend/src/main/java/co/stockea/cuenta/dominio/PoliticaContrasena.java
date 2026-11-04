@@ -6,54 +6,54 @@ import java.util.Locale;
 
 public final class PoliticaContrasena {
 
-    private static final int MINIMUM_LENGTH = 10;
+    private static final int LONGITUD_MINIMA = 10;
 
-    public List<InfraccionPoliticaContrasenas> validate(ContrasenaPlana password, String documentNumber, String email) {
-        return validate(password, null, null, documentNumber, email, false);
+    public List<InfraccionPoliticaContrasenas> validar(ContrasenaPlana contrasena, String numeroDocumento, String correo) {
+        return validar(contrasena, null, null, numeroDocumento, correo, false);
     }
 
-    public List<InfraccionPoliticaContrasenas> validateWithHistory(ContrasenaPlana password, ContrasenaPlana currentPassword,
-                                                                   ResultadoHistorialContrasena historyResult,
-                                                                   String documentNumber, String email) {
-        if (currentPassword == null) {
+    public List<InfraccionPoliticaContrasenas> validarConHistorial(ContrasenaPlana contrasena, ContrasenaPlana contrasenaActual,
+                                                                   ResultadoHistorialContrasena resultadoHistorial,
+                                                                   String numeroDocumento, String correo) {
+        if (contrasenaActual == null) {
             throw new IllegalArgumentException("La contraseña actual no puede ser nula");
         }
-        if (historyResult == null) {
+        if (resultadoHistorial == null) {
             throw new IllegalArgumentException("El resultado del historial de contraseñas no puede ser nulo");
         }
-        return validate(password, currentPassword, historyResult, documentNumber, email, true);
+        return validar(contrasena, contrasenaActual, resultadoHistorial, numeroDocumento, correo, true);
     }
 
-    private List<InfraccionPoliticaContrasenas> validate(ContrasenaPlana password, ContrasenaPlana currentPassword,
-                                                         ResultadoHistorialContrasena historyResult, String documentNumber,
-                                                         String email, boolean includeHistory) {
-        if (password == null) {
+    private List<InfraccionPoliticaContrasenas> validar(ContrasenaPlana contrasena, ContrasenaPlana contrasenaActual,
+                                                         ResultadoHistorialContrasena resultadoHistorial, String numeroDocumento,
+                                                         String correo, boolean incluirHistorial) {
+        if (contrasena == null) {
             throw new IllegalArgumentException("La contraseña no puede ser nula");
         }
-        if (documentNumber == null || documentNumber.isBlank()) {
+        if (numeroDocumento == null || numeroDocumento.isBlank()) {
             throw new IllegalArgumentException("El numero de documento no puede ser nulo ni vacío");
         }
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("El email no puede ser nulo ni vacío");
+        if (correo == null || correo.isBlank()) {
+            throw new IllegalArgumentException("El correo no puede ser nulo ni vacío");
         }
 
-        String value = password.value();
-        List<InfraccionPoliticaContrasenas> violations = new ArrayList<>();
-        if (value.codePointCount(0, value.length()) < MINIMUM_LENGTH) {
-            violations.add(InfraccionPoliticaContrasenas.DEMASIADO_CORTA);
+        String valor = contrasena.valor();
+        List<InfraccionPoliticaContrasenas> infracciones = new ArrayList<>();
+        if (valor.codePointCount(0, valor.length()) < LONGITUD_MINIMA) {
+            infracciones.add(InfraccionPoliticaContrasenas.DEMASIADO_CORTA);
         }
-        if (includeHistory && value.equals(currentPassword.value())) {
-            violations.add(InfraccionPoliticaContrasenas.IGUAL_A_LA_ACTUAL);
+        if (incluirHistorial && valor.equals(contrasenaActual.valor())) {
+            infracciones.add(InfraccionPoliticaContrasenas.IGUAL_A_LA_ACTUAL);
         }
-        if (includeHistory && historyResult == ResultadoHistorialContrasena.REUTILIZADA) {
-            violations.add(InfraccionPoliticaContrasenas.EN_HISTORIAL_DE_CONTRASENAS);
+        if (incluirHistorial && resultadoHistorial == ResultadoHistorialContrasena.REUTILIZADA) {
+            infracciones.add(InfraccionPoliticaContrasenas.EN_HISTORIAL_DE_CONTRASENAS);
         }
-        if (value.contains(documentNumber)) {
-            violations.add(InfraccionPoliticaContrasenas.CONTIENE_NUMERO_DOCUMENTO);
+        if (valor.contains(numeroDocumento)) {
+            infracciones.add(InfraccionPoliticaContrasenas.CONTIENE_NUMERO_DOCUMENTO);
         }
-        if (value.toLowerCase(Locale.ROOT).contains(email.toLowerCase(Locale.ROOT))) {
-            violations.add(InfraccionPoliticaContrasenas.CONTIENE_EMAIL);
+        if (valor.toLowerCase(Locale.ROOT).contains(correo.toLowerCase(Locale.ROOT))) {
+            infracciones.add(InfraccionPoliticaContrasenas.CONTIENE_CORREO);
         }
-        return List.copyOf(violations);
+        return List.copyOf(infracciones);
     }
 }

@@ -5,5 +5,5 @@ public enum InfraccionPoliticaContrasenas {
     IGUAL_A_LA_ACTUAL,
     EN_HISTORIAL_DE_CONTRASENAS,
     CONTIENE_NUMERO_DOCUMENTO,
-    CONTIENE_EMAIL
+    CONTIENE_CORREO
 }
