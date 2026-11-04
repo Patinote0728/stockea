@@ -11,7 +11,8 @@ public final class ContrasenaPlana {
         this.valor = valor;
     }
 
-    String valor() {
+    /** Expone el valor solo para enviarlo al proveedor de identidad; nunca debe registrarse ni persistirse. */
+    public String valor() {
         return valor;
     }
 

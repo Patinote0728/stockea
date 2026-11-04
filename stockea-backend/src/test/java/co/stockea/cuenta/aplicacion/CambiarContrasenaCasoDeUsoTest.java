@@ -1,6 +1,7 @@
 package co.stockea.cuenta.aplicacion;
 
 import co.stockea.cuenta.aplicacion.modelo.CambiarContrasenaSolicitud;
+import co.stockea.cuenta.aplicacion.modelo.CredencialesCorreo;
 import co.stockea.cuenta.aplicacion.modelo.CredencialesProveedorIdentidad;
 import co.stockea.cuenta.aplicacion.puerto.PuertoAuditoria;
 import co.stockea.cuenta.aplicacion.puerto.PuertoNotificaciones;
@@ -83,9 +84,17 @@ class CambiarContrasenaCasoDeUsoTest {
     void registraElIntentoSiKeyVaultNoEstaDisponible() {
         var eventos = new ArrayList<String>();
         var proveedorIdentidad = new ProveedorIdentidadDoble(eventos, true);
-        var casoDeUso = crearCasoDeUso(eventos, proveedorIdentidad, () -> {
-            eventos.add("secretos");
-            throw new ProveedorIdentidadNoDisponibleExcepcion();
+        var casoDeUso = crearCasoDeUso(eventos, proveedorIdentidad, new PuertoSecretos() {
+            @Override
+            public CredencialesProveedorIdentidad obtenerCredencialesProveedorIdentidad() {
+                eventos.add("secretos");
+                throw new ProveedorIdentidadNoDisponibleExcepcion();
+            }
+
+            @Override
+            public CredencialesCorreo obtenerCredencialesCorreo() {
+                throw new UnsupportedOperationException("El caso de uso no lee credenciales SMTP");
+            }
         });
 
         assertThrows(ProveedorIdentidadNoDisponibleExcepcion.class,
@@ -119,9 +128,17 @@ class CambiarContrasenaCasoDeUsoTest {
     }
 
     private PuertoSecretos crearPuertoSecretos(List<String> eventos) {
-        return () -> {
-            eventos.add("secretos");
-            return CREDENCIALES;
+        return new PuertoSecretos() {
+            @Override
+            public CredencialesProveedorIdentidad obtenerCredencialesProveedorIdentidad() {
+                eventos.add("secretos");
+                return CREDENCIALES;
+            }
+
+            @Override
+            public CredencialesCorreo obtenerCredencialesCorreo() {
+                throw new UnsupportedOperationException("El caso de uso no lee credenciales SMTP");
+            }
         };
     }
 

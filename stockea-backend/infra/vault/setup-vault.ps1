@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Prepara el Vault local (modo dev, en memoria) para SPK-007: AppRole + política + secreto del IDP.
+  Prepara el Vault local (modo dev, en memoria): AppRole + política + secretos del IDP y SMTP.
 
 .DESCRIPTION
   Idempotente: se puede ejecutar de nuevo (por ejemplo tras reiniciar el contenedor, que pierde todo).
@@ -8,12 +8,15 @@
     2. Escribe la política stockea-idp-read (infra/vault/stockea-idp-read.hcl).
     3. Crea el rol stockea-backend con esa política.
     4. Siembra secret/stockea/idp (KV v2) si no existe, o si se pasan los secretos por variables de entorno.
-    5. Regenera .vault/role-id y .vault/secret-id (ignorados por git).
+    5. Si se pasan credenciales SMTP, las siembra en secret/stockea/mail (KV v2).
+    6. Regenera .vault/role-id y .vault/secret-id (ignorados por git).
   Nunca imprime RoleId, SecretId, tokens ni valores de secretos.
 
   Variables de entorno opcionales para el secreto del IDP:
     STOCKEA_IDP_VERIFIER_CLIENT_SECRET  (cliente stockea-pwd-verifier)
     STOCKEA_IDP_ADMIN_CLIENT_SECRET     (cliente stockea-admin-api)
+    STOCKEA_MAIL_SMTP_USERNAME
+    STOCKEA_MAIL_SMTP_PASSWORD
   Si no existen y el secreto no está sembrado, se escribe un valor PLACEHOLDER (suficiente para el spike).
 
 .EXAMPLE
@@ -87,6 +90,19 @@ if ($verifier -or $admin -or -not $exists) {
     }
 } else {
     Write-Host '      ya existe; se conserva (usa las variables de entorno para sobrescribirlo).'
+}
+
+$mailUsername = $env:STOCKEA_MAIL_SMTP_USERNAME
+$mailPassword = $env:STOCKEA_MAIL_SMTP_PASSWORD
+if (($mailUsername -and -not $mailPassword) -or (-not $mailUsername -and $mailPassword)) {
+    throw 'Para sembrar credenciales SMTP debes proporcionar usuario y contraseña.'
+}
+if ($mailUsername -and $mailPassword) {
+    $mailJson = @{
+        'smtp-username' = $mailUsername
+        'smtp-password' = $mailPassword
+    } | ConvertTo-Json -Compress
+    Assert-Vault (Invoke-Vault 'vault kv put -mount=secret stockea/mail -' $mailJson) 'kv put mail'
 }
 
 Write-Host '[6/6] Regenerando .vault/role-id y .vault/secret-id...'
