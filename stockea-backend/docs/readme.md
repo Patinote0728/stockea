@@ -56,3 +56,8 @@ Arquitectura documentada de principio a fin: decisiones técnicas justificadas c
 ---
 
 **STOCKEA: vende sin internet, compra con inteligencia, pierde menos mercancía.**
+## Diagramas de arquitectura
+
+Las fuentes editables y las instrucciones para exportar sus páginas a SVG e insertarlas en Markdown están en [docs/arquitectura](./arquitectura/README.md).
+
+La preparación del despliegue temporal del backend en Render está descrita en [Despliegue temporal en Render](./Despliegue%20temporal%20en%20Render.md).

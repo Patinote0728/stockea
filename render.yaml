@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: stockea-backend
+    runtime: docker
+    rootDir: stockea-backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: stockea-postgres
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: stockea-postgres
+          property: port
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: stockea-postgres
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: stockea-postgres
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: stockea-postgres
+          property: password
+      - key: VAULT_ADDR
+        sync: false
+      - key: STOCKEA_VAULT_ROLE_ID
+        sync: false
+      - key: STOCKEA_VAULT_SECRET_ID_FILE
+        value: /etc/secrets/vault-secret-id
+      - key: STOCKEA_IDP_URL
+        sync: false
+      - key: STOCKEA_IDP_ISSUER_URI
+        sync: false
+      - key: STOCKEA_IDP_JWK_SET_URI
+        sync: false
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        value: "2525"
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_SMTP_AUTH_ENABLED
+        value: "true"
+      - key: MAIL_SMTP_STARTTLS_ENABLED
+        value: "true"
+
+databases:
+  - name: stockea-postgres
+    plan: free
+    postgresMajorVersion: "16"
+    databaseName: stockea
+    user: stockea
