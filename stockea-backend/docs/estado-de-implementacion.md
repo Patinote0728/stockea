@@ -13,7 +13,8 @@
 - [x] Fase 1 / SPK-006: Keycloak validado (alternativa A)
 - [x] Fase 1 / SPK-007: Key Vault validado (AppRole + lectura de `secret/stockea/idp`; ver `Spk007VaultAppRoleSpikeTest`)
 - [x] Fase 2: dominio (política de contraseña, excepciones de dominio, pruebas y ArquitecturaTest; `mvn clean test` en verde y cobertura del 100 % en `PoliticaContrasena` y `ContrasenaPlana`)
-- [ ] Fases 3 a 8 (aplicación → infraestructura → interfaces → proxy/WAF → frontend → aceptación)
+- [x] Fase 3: aplicación (caso de uso para cambiar contraseña y puertos de IDP, secretos, notificaciones y auditoría)
+- [ ] Fases 4 a 8 (infraestructura → interfaces → proxy/WAF → frontend → aceptación)
 
 ## Decisiones tomadas en la implementación
 - Realm `stockea`; clientes `stockea-pwd-verifier` y `stockea-admin-api` (service account con manage-users)
