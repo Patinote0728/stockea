@@ -61,3 +61,5 @@ Arquitectura documentada de principio a fin: decisiones técnicas justificadas c
 Las fuentes editables y las instrucciones para exportar sus páginas a SVG e insertarlas en Markdown están en [docs/arquitectura](./arquitectura/README.md).
 
 La preparación del despliegue temporal del backend en Render está descrita en [Despliegue temporal en Render](./Despliegue%20temporal%20en%20Render.md).
+
+La aceptación local del flujo RF-007.7 y los pasos para levantar la pantalla con el proxy HTTPS están en [Aceptación local de RF-007.7](./Aceptacion%20RF-007.7.md).

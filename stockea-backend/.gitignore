@@ -37,3 +37,5 @@ build/
 
 
 .vault/
+infra/proxy/*.p12
+infra/proxy/*.crt

@@ -17,12 +17,16 @@
 - [x] Fase 3: aplicación (caso de uso para cambiar contraseña y puertos de IDP, secretos, notificaciones y auditoría)
 - [x] Fase 4: adaptadores de Vault, Keycloak, SMTP y auditoría
 - [x] Fase 5: interfaces para RF-007.7 (endpoint REST, validación JWT, respuestas HTTP y límite de intentos)
-- [ ] Fases 6 a 8 (proxy/WAF → frontend → aceptación)
-- Preparación de despliegue temporal: el backend ya tiene una imagen Docker multi-etapa y acepta el puerto `PORT`; todavía no está publicado ni cuenta con WAF delante
+- [~] Fase 6: reverse proxy Caddy con TLS en desarrollo local; WAF/CDN público pendiente
+- [~] Fase 7: pantalla de cambio de contraseña RF-007.7 en React; despliegue estático pendiente
+- [~] Fase 8: aceptación del contrato HTTP/JWT automatizada; recorrido integral con Keycloak/Vault y correo real pendiente
+- [x] CI: workflow de GitHub Actions configurado para pruebas Java y frontend, cobertura crítica, construcción de imágenes y análisis Trivy; ejecución remota pendiente
+- Preparación de despliegue temporal: Blueprint Render para backend/PostgreSQL y Compose local para la experiencia RF-007.7; el backend aún no está publicado ni cuenta con WAF delante
 
 ## HTTPS
-- Requisito decidido en `docs/Restricciones Técnicas.md` y ADR-007: tráfico con HTTPS/TLS 1.2 o superior; el Reverse Proxy termina TLS. No está implementado todavía: corresponde a la fase 6, y no hay frontend ni Reverse Proxy/WAF configurados
-- El entorno local actual expone el Backend en HTTP `:8081`, Keycloak en HTTP `:8080` y Vault en HTTP `:8200`; estos son endpoints locales de desarrollo, no prueban cumplimiento del requisito HTTPS para el tráfico web
+- Requisito decidido en `docs/Restricciones Técnicas.md` y ADR-007: tráfico con HTTPS/TLS 1.2 o superior; el Reverse Proxy termina TLS.
+- En desarrollo local, Caddy sirve el frontend y Keycloak por HTTPS, y re-encripta el salto al Backend con un certificado local. El navegador puede requerir confiar en la CA local de Caddy.
+- La API de desarrollo solo es accesible desde la red interna de Compose; los puertos de Postgres, Keycloak, Vault y Mailpit se enlazan a loopback. Esta configuración no prueba un despliegue público, WAF/CDN ni TLS público.
 
 ## Decisiones tomadas en la implementación
 - Realm `stockea`; clientes `stockea-pwd-verifier` y `stockea-admin-api` (service account con manage-users)
@@ -35,13 +39,13 @@
 - Infraestructura: `AdaptadorKeycloakProveedorIdentidad` valida la contraseña actual con el flujo password y usa client credentials para actualizarla y cerrar sesiones; `AdaptadorVaultSecretos` entrega credenciales de IDP y SMTP en tiempo de ejecución; `AdaptadorNotificacionesSmtp` usa Mailpit local y reintenta de forma asíncrona hasta 5 veces; `AdaptadorAuditoriaLog` registra intentos sin credenciales
 - Interfaces de RF-007.7: `POST /api/v1/cuenta/contrasena` obtiene `sub`, `preferred_username` y `email` del JWT; no acepta identidad desde el cuerpo. JWT validado por emisor y JWKS; endpoint sin estado, respuestas no almacenables y máximo de 5 fallos por usuario en 15 minutos; el intento bloqueado se audita. El contador en memoria es para una sola instancia, según la deuda aceptada del ADR-007
 - El envío SMTP autenticado toma usuario y contraseña de `secret/stockea/mail`; para sembrarlos, definir `STOCKEA_MAIL_SMTP_USERNAME` y `STOCKEA_MAIL_SMTP_PASSWORD` al ejecutar el setup. Mailpit local no requiere autenticación
-- Verificación local en IntelliJ: adaptadores de fase 4, 9/9 pruebas; caso de uso de fase 3, 5/5 pruebas; ArchUnit, 2/2 reglas. La ejecución completa más reciente anterior a estas pruebas reportó 29 pruebas, 0 fallos, 0 errores y 1 omitida; falta repetir `clean test` integral con los adaptadores incluidos
+- Verificación local reciente: `mvnw clean verify` con 46 pruebas (45 pasaron, 1 omitida) y límites JaCoCo críticos cumplidos; frontend: 7/7 pruebas y compilación Vite exitosa. Pendiente confirmar ejecución del workflow en GitHub.
 - Dominio en español sin tildes ni eñes en identificadores; pruebas terminan en `Test`
 - No se valida contra una lista de contraseñas comunes: riesgo aceptado en el MVP, mitigado por el límite de intentos y la detección de fuerza bruta del IDP
 
 ## Pendientes / riesgos abiertos
 - Alternativa B (API de cuenta de Keycloak) sin probar
-- Habilitar y verificar el recorrido web HTTPS (TLS 1.2+, HSTS y origen accesible solo desde WAF/CDN) durante la fase Reverse Proxy/WAF; la API local sigue expuesta por HTTP
+- Habilitar y verificar el recorrido público HTTPS (TLS 1.2+, HSTS y origen accesible solo desde WAF/CDN) durante la fase Reverse Proxy/WAF; el TLS actual es solo local
 - Los secretos locales pueden contener valores de relleno (`CAMBIAR-POR-EL-SECRETO-REAL`): cargar los reales de Keycloak con `STOCKEA_IDP_VERIFIER_CLIENT_SECRET` y `STOCKEA_IDP_ADMIN_CLIENT_SECRET`; para correo autenticado, cargar las credenciales SMTP con las variables correspondientes
 - Autenticación del Backend ante Vault en producción: el rol actual usa `secret_id_ttl=0` (solo desarrollo); definir TTL, entrega y rotación del SecretId, y un Vault no-dev con almacenamiento persistente. También valorar `LifecycleAwareSessionManager` (renovación de token) en lugar de `SimpleSessionManager`
 - SPK-008 pendiente: validar el envío por el proveedor SMTP elegido y su entrega en una bandeja real; la prueba local de Mailpit no cubre la entrega externa

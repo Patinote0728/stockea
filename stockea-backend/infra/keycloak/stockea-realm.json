@@ -1,6 +1,31 @@
 {
   "id": "9160eb3f-aad8-4fc5-87f6-2b18de083ab9",
   "realm": "stockea",
+  "clients": [
+    {
+      "clientId": "stockea-web",
+      "name": "STOCKEA Web",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "https://localhost/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "https://localhost"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173/*##https://localhost/*"
+      }
+    }
+  ],
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,
