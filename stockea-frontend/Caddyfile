@@ -1,0 +1,35 @@
+localhost {
+    tls internal
+    encode gzip zstd
+
+    header {
+        Strict-Transport-Security "max-age=300"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "no-referrer"
+        Content-Security-Policy "default-src 'self'; connect-src 'self' https://keycloak.localhost; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+        -Server
+    }
+
+    @api path /api/*
+    handle @api {
+        reverse_proxy https://backend:8081 {
+            transport http {
+                tls_trusted_ca_certs /etc/caddy/certs/backend.crt
+            }
+        }
+    }
+
+    handle {
+        root * /usr/share/caddy
+        try_files {path} /index.html
+        file_server
+    }
+}
+
+keycloak.localhost {
+    tls internal
+    reverse_proxy http://keycloak:8080 {
+        header_up X-Forwarded-Proto https
+    }
+}

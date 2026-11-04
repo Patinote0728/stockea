@@ -1,0 +1,91 @@
+name: Verificacion continua
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar-frontend:
+    name: Frontend · React y Vite
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stockea-frontend
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v7
+
+      - name: Configurar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: pnpm
+          cache-dependency-path: stockea-frontend/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Ejecutar pruebas del frontend
+        run: pnpm test
+
+      - name: Construir frontend
+        run: pnpm build
+
+      - name: Construir imagen Docker del frontend
+        run: docker build --tag stockea-frontend:${{ github.sha }} .
+
+  verificar-backend:
+    name: Backend · Java 26
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stockea-backend
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v7
+
+      - name: Configurar Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '26'
+          cache: maven
+          cache-dependency-path: stockea-backend/pom.xml
+
+      - name: Ejecutar pruebas y comprobar cobertura critica
+        run: bash ./mvnw -B -ntp clean verify
+
+      - name: Construir imagen Docker
+        run: docker build --tag stockea-backend:${{ github.sha }} .
+
+      - name: Analizar vulnerabilidades de la imagen
+        run: >-
+          docker run --rm
+          -v /var/run/docker.sock:/var/run/docker.sock
+          aquasec/trivy:0.76.1
+          image --scanners vuln,secret
+          --severity CRITICAL,HIGH --exit-code 1
+          stockea-backend:${{ github.sha }}
+
+      - name: Publicar reporte de cobertura
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cobertura-backend
+          path: stockea-backend/target/site/jacoco/
+          if-no-files-found: ignore
+          retention-days: 14

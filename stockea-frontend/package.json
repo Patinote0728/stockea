@@ -1,0 +1,25 @@
+{
+  "name": "stockea-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test src/test/cambiarContrasena.test.js src/test/validarCambioContrasena.test.js"
+  },
+  "dependencies": {
+    "keycloak-js": "26.2.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.2.1",
+    "vite": "^8.3.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "packageManager": "pnpm@11.25.0"
+}
