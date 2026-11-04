@@ -10,19 +10,19 @@ class RawPasswordTest {
 
     @Test
     void rejectsNullOrEmptyValues() {
-        assertThrows(IllegalArgumentException.class, () -> new RawPassword(null));
-        assertThrows(IllegalArgumentException.class, () -> new RawPassword(""));
+        assertThrows(IllegalArgumentException.class, () -> new ContrasenaPlana(null));
+        assertThrows(IllegalArgumentException.class, () -> new ContrasenaPlana(""));
     }
 
     @Test
     void acceptsNonEmptyValues() {
-        assertDoesNotThrow(() -> new RawPassword("valid-password"));
+        assertDoesNotThrow(() -> new ContrasenaPlana("valid-password"));
     }
 
     @Test
     void doesNotExposeValueInToString() {
         String secret = "never-print-this-password";
 
-        assertFalse(new RawPassword(secret).toString().contains(secret));
+        assertFalse(new ContrasenaPlana(secret).toString().contains(secret));
     }
 }

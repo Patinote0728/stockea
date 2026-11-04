@@ -9,95 +9,95 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PasswordPolicyTest {
 
-    private final PasswordPolicy policy = new PasswordPolicy();
+    private final PoliticaContrasena policy = new PoliticaContrasena();
 
     @Test
     void validPasswordHasNoViolations() {
-        assertEquals(List.of(), policy.validate(new RawPassword("Abcdef12345"), "998877", "user@example.com"));
+        assertEquals(List.of(), policy.validate(new ContrasenaPlana("Abcdef12345"), "998877", "user@example.com"));
     }
 
     @Test
     void passwordWithExactlyTenCharactersHasNoViolations() {
-        assertEquals(List.of(), policy.validate(new RawPassword("Abcdef1234"), "998877", "user@example.com"));
+        assertEquals(List.of(), policy.validate(new ContrasenaPlana("Abcdef1234"), "998877", "user@example.com"));
     }
 
     @Test
     void passwordWithNineCharactersIsTooShort() {
-        assertEquals(List.of(PasswordPolicyViolation.TOO_SHORT),
-                policy.validate(new RawPassword("Abcdef123"), "998877", "user@example.com"));
+        assertEquals(List.of(InfraccionPoliticaContrasenas.DEMASIADO_CORTA),
+                policy.validate(new ContrasenaPlana("Abcdef123"), "998877", "user@example.com"));
     }
 
     @Test
     void detectsDocumentNumberAnywhereInPassword() {
-        assertEquals(List.of(PasswordPolicyViolation.CONTAINS_DOCUMENT_NUMBER),
-                policy.validate(new RawPassword("My-123456-password"), "123456", "user@example.com"));
+        assertEquals(List.of(InfraccionPoliticaContrasenas.CONTIENE_NUMERO_DOCUMENTO),
+                policy.validate(new ContrasenaPlana("My-123456-password"), "123456", "user@example.com"));
     }
 
     @Test
     void detectsEmailWithoutCaseSensitivity() {
-        assertEquals(List.of(PasswordPolicyViolation.CONTAINS_EMAIL),
-                policy.validate(new RawPassword("UseALICE@EXAMPLE.COM-now"), "998877", "alice@example.com"));
+        assertEquals(List.of(InfraccionPoliticaContrasenas.CONTIENE_EMAIL),
+                policy.validate(new ContrasenaPlana("UseALICE@EXAMPLE.COM-now"), "998877", "alice@example.com"));
     }
 
     @Test
     void returnsAllViolations() {
-        assertEquals(List.of(PasswordPolicyViolation.TOO_SHORT,
-                        PasswordPolicyViolation.CONTAINS_DOCUMENT_NUMBER,
-                        PasswordPolicyViolation.CONTAINS_EMAIL),
-                policy.validate(new RawPassword("12ab@x.c"), "12", "ab@x.c"));
+        assertEquals(List.of(InfraccionPoliticaContrasenas.DEMASIADO_CORTA,
+                        InfraccionPoliticaContrasenas.CONTIENE_NUMERO_DOCUMENTO,
+                        InfraccionPoliticaContrasenas.CONTIENE_EMAIL),
+                policy.validate(new ContrasenaPlana("12ab@x.c"), "12", "ab@x.c"));
     }
 
     @Test
     void acceptsPasswordNotPreviouslyUsedAccordingToIdentityProvider() {
         assertEquals(List.of(), policy.validateWithHistory(
-                new RawPassword("Abcdef1234"), new RawPassword("Old-pass-123"),
-                PasswordHistoryResult.NOT_REUSED, "998877", "user@example.com"));
+                new ContrasenaPlana("Abcdef1234"), new ContrasenaPlana("Old-pass-123"),
+                ResultadoHistorialContrasena.NO_REUTILIZADA, "998877", "user@example.com"));
     }
 
     @Test
     void rejectsPasswordEqualToCurrentPassword() {
-        assertEquals(List.of(PasswordPolicyViolation.SAME_AS_CURRENT_PASSWORD),
-                policy.validateWithHistory(new RawPassword("Abcdef1234"), new RawPassword("Abcdef1234"),
-                        PasswordHistoryResult.NOT_REUSED, "998877", "user@example.com"));
+        assertEquals(List.of(InfraccionPoliticaContrasenas.IGUAL_A_LA_ACTUAL),
+                policy.validateWithHistory(new ContrasenaPlana("Abcdef1234"), new ContrasenaPlana("Abcdef1234"),
+                        ResultadoHistorialContrasena.NO_REUTILIZADA, "998877", "user@example.com"));
     }
 
     @Test
     void rejectsPasswordReportedAsPreviouslyUsedByIdentityProvider() {
-        assertEquals(List.of(PasswordPolicyViolation.IN_PASSWORD_HISTORY),
-                policy.validateWithHistory(new RawPassword("Abcdef1234"), new RawPassword("Old-pass-123"),
-                        PasswordHistoryResult.REUSED, "998877", "user@example.com"));
+        assertEquals(List.of(InfraccionPoliticaContrasenas.EN_HISTORIAL_DE_CONTRASENAS),
+                policy.validateWithHistory(new ContrasenaPlana("Abcdef1234"), new ContrasenaPlana("Old-pass-123"),
+                        ResultadoHistorialContrasena.REUTILIZADA, "998877", "user@example.com"));
     }
 
     @Test
     void accumulatesHistoryAndOtherPasswordViolations() {
-        assertEquals(List.of(PasswordPolicyViolation.TOO_SHORT,
-                        PasswordPolicyViolation.SAME_AS_CURRENT_PASSWORD,
-                        PasswordPolicyViolation.IN_PASSWORD_HISTORY,
-                        PasswordPolicyViolation.CONTAINS_DOCUMENT_NUMBER),
-                policy.validateWithHistory(new RawPassword("123456789"), new RawPassword("123456789"),
-                        PasswordHistoryResult.REUSED, "123", "user@example.com"));
+        assertEquals(List.of(InfraccionPoliticaContrasenas.DEMASIADO_CORTA,
+                        InfraccionPoliticaContrasenas.IGUAL_A_LA_ACTUAL,
+                        InfraccionPoliticaContrasenas.EN_HISTORIAL_DE_CONTRASENAS,
+                        InfraccionPoliticaContrasenas.CONTIENE_NUMERO_DOCUMENTO),
+                policy.validateWithHistory(new ContrasenaPlana("123456789"), new ContrasenaPlana("123456789"),
+                        ResultadoHistorialContrasena.REUTILIZADA, "123", "user@example.com"));
     }
 
     @Test
     void rejectsMissingHistoryContext() {
-        RawPassword password = new RawPassword("Abcdef1234");
-        RawPassword currentPassword = new RawPassword("Old-pass-123");
+        ContrasenaPlana password = new ContrasenaPlana("Abcdef1234");
+        ContrasenaPlana currentPassword = new ContrasenaPlana("Old-pass-123");
 
         assertThrows(IllegalArgumentException.class, () -> policy.validateWithHistory(
-                password, null, PasswordHistoryResult.NOT_REUSED, "998877", "user@example.com"));
+                password, null, ResultadoHistorialContrasena.NO_REUTILIZADA, "998877", "user@example.com"));
         assertThrows(IllegalArgumentException.class, () -> policy.validateWithHistory(
                 password, currentPassword, null, "998877", "user@example.com"));
     }
 
     @Test
     void countsUnicodeCodePointsInsteadOfUtf16Units() {
-        assertEquals(List.of(PasswordPolicyViolation.TOO_SHORT),
-                policy.validate(new RawPassword("😀😀😀😀😀😀😀😀😀"), "998877", "user@example.com"));
+        assertEquals(List.of(InfraccionPoliticaContrasenas.DEMASIADO_CORTA),
+                policy.validate(new ContrasenaPlana("😀😀😀😀😀😀😀😀😀"), "998877", "user@example.com"));
     }
 
     @Test
     void rejectsMissingIdentityValues() {
-        RawPassword password = new RawPassword("Abcdef1234");
+        ContrasenaPlana password = new ContrasenaPlana("Abcdef1234");
 
         assertThrows(IllegalArgumentException.class, () -> policy.validate(null, "998877", "user@example.com"));
         assertThrows(IllegalArgumentException.class, () -> policy.validate(password, null, "user@example.com"));
@@ -109,10 +109,10 @@ class PasswordPolicyTest {
 
     @Test
     void returnsAnImmutableViolationList() {
-        List<PasswordPolicyViolation> violations =
-                policy.validate(new RawPassword("short"), "998877", "user@example.com");
+        List<InfraccionPoliticaContrasenas> violations =
+                policy.validate(new ContrasenaPlana("short"), "998877", "user@example.com");
 
         assertThrows(UnsupportedOperationException.class,
-                () -> violations.add(PasswordPolicyViolation.CONTAINS_EMAIL));
+                () -> violations.add(InfraccionPoliticaContrasenas.CONTIENE_EMAIL));
     }
 }

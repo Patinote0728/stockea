@@ -1,10 +1,10 @@
 package co.stockea.cuenta.dominio;
 
-public final class RawPassword {
+public final class ContrasenaPlana {
 
     private final String value;
 
-    public RawPassword(String value) {
+    public ContrasenaPlana(String value) {
         if (value == null || value.isEmpty()) {
             throw new IllegalArgumentException("La contraseña no puede ser nula ni vacía");
         }

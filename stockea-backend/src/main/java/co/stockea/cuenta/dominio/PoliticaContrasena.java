@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public final class PasswordPolicy {
+public final class PoliticaContrasena {
 
     private static final int MINIMUM_LENGTH = 10;
 
-    public List<PasswordPolicyViolation> validate(RawPassword password, String documentNumber, String email) {
+    public List<InfraccionPoliticaContrasenas> validate(ContrasenaPlana password, String documentNumber, String email) {
         return validate(password, null, null, documentNumber, email, false);
     }
 
-    public List<PasswordPolicyViolation> validateWithHistory(RawPassword password, RawPassword currentPassword,
-                                                              PasswordHistoryResult historyResult,
-                                                              String documentNumber, String email) {
+    public List<InfraccionPoliticaContrasenas> validateWithHistory(ContrasenaPlana password, ContrasenaPlana currentPassword,
+                                                                   ResultadoHistorialContrasena historyResult,
+                                                                   String documentNumber, String email) {
         if (currentPassword == null) {
             throw new IllegalArgumentException("La contraseña actual no puede ser nula");
         }
@@ -24,9 +24,9 @@ public final class PasswordPolicy {
         return validate(password, currentPassword, historyResult, documentNumber, email, true);
     }
 
-    private List<PasswordPolicyViolation> validate(RawPassword password, RawPassword currentPassword,
-                                                    PasswordHistoryResult historyResult, String documentNumber,
-                                                    String email, boolean includeHistory) {
+    private List<InfraccionPoliticaContrasenas> validate(ContrasenaPlana password, ContrasenaPlana currentPassword,
+                                                         ResultadoHistorialContrasena historyResult, String documentNumber,
+                                                         String email, boolean includeHistory) {
         if (password == null) {
             throw new IllegalArgumentException("La contraseña no puede ser nula");
         }
@@ -38,21 +38,21 @@ public final class PasswordPolicy {
         }
 
         String value = password.value();
-        List<PasswordPolicyViolation> violations = new ArrayList<>();
+        List<InfraccionPoliticaContrasenas> violations = new ArrayList<>();
         if (value.codePointCount(0, value.length()) < MINIMUM_LENGTH) {
-            violations.add(PasswordPolicyViolation.TOO_SHORT);
+            violations.add(InfraccionPoliticaContrasenas.DEMASIADO_CORTA);
         }
         if (includeHistory && value.equals(currentPassword.value())) {
-            violations.add(PasswordPolicyViolation.SAME_AS_CURRENT_PASSWORD);
+            violations.add(InfraccionPoliticaContrasenas.IGUAL_A_LA_ACTUAL);
         }
-        if (includeHistory && historyResult == PasswordHistoryResult.REUSED) {
-            violations.add(PasswordPolicyViolation.IN_PASSWORD_HISTORY);
+        if (includeHistory && historyResult == ResultadoHistorialContrasena.REUTILIZADA) {
+            violations.add(InfraccionPoliticaContrasenas.EN_HISTORIAL_DE_CONTRASENAS);
         }
         if (value.contains(documentNumber)) {
-            violations.add(PasswordPolicyViolation.CONTAINS_DOCUMENT_NUMBER);
+            violations.add(InfraccionPoliticaContrasenas.CONTIENE_NUMERO_DOCUMENTO);
         }
         if (value.toLowerCase(Locale.ROOT).contains(email.toLowerCase(Locale.ROOT))) {
-            violations.add(PasswordPolicyViolation.CONTAINS_EMAIL);
+            violations.add(InfraccionPoliticaContrasenas.CONTIENE_EMAIL);
         }
         return List.copyOf(violations);
     }
