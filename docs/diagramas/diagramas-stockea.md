@@ -11,3 +11,7 @@
 ## Diagrama de secuencia
 
 ![Diagrama de secuencia de STOCKEA](stockea-diagrama-secuencia.png)
+
+## Modelo C4 nivel 2
+
+![Modelo C4 de Stockea, nivel 2](C4-nivel-2-stockea.jpg)
